@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Mentation Thermal Printer Android Test</title>
+  <script>
+    function printViaBluetooth() {
+      navigator.bluetooth.requestDevice({
+        acceptAllDevices: true,
+        optionalServices: ['e7810a71-73ae-499d-8c15-faa9aef0c3f2'] // The service UUID you provided
+      })
+      .then(device => {
+        console.log('Device discovered', device.name);
+        return device.gatt.connect();
+      })
+      .then(server => {
+        console.log('Getting Service...');
+        return server.getPrimaryService('e7810a71-73ae-499d-8c15- faa9aef0c3f2'); // The service UUID you provided
+      })
+      .then(service => {
+        console.log('Getting Characteristic...');
+        return service.getCharacteristic('bef8d6c9-9c21-4c9e-b632- bd58c1009f9f'); // The characteristic UUID you provided
+      })
+      .then(characteristic => {
+        console.log('All ready!');
+        // Now you can use characteristic.writeValue to send data to your device.
+        // This will be printer specific command data. For example:
+
+        let esc = '\x1B'; // ESC byte in hex notation
+        let newline = '\x0A'; // LF byte in hex notation
+
+      // 5 lines of text, each followed by a line feed
+      let cmd = esc + "t" + "\x00" +
+        'Line 1 Mentation technologies' + newline + 'Line 2' + newline +
+        'Line 3' + newline + 'Line 4' + newline + 'Line 5' + newline + '<br/>' + newline + '<br/>' + newline;
+
+      let encoder = new TextEncoder('utf-8');
+      let data = encoder.encode(cmd);
+      return characteristic.writeValue(data);
+    })
+ 
+.catch (error => {
+      console.log('Something went wrong: ' + error);
+    });
+}
+  </script>
+</head>
+
+<body>
+  <button onclick="printViaBluetooth()">Print via Bluetooth</button>
+</body>
+
+</html>
